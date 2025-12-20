@@ -38,11 +38,7 @@ sam.eval()
 # Automatic mask generator
 # --------------------------------------------------
 mask_generator = SamAutomaticMaskGenerator(
-    model=sam,
-    points_per_side=32,
-    pred_iou_thresh=0.86,
-    stability_score_thresh=0.92,
-    min_mask_region_area=100,
+    model=sam
 )
 
 masks = mask_generator.generate(image)
