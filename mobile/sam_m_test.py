@@ -17,7 +17,7 @@ def load_image_for_inference(path):
 # --------------------------------------------------
 model_type = "vit_t"
 sam_checkpoint = "weights/mobile_sam.pt"
-image_path = "photos/good_light_1.png"
+image_path = "../photos/good_light_1.png"
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
 

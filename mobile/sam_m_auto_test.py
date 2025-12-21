@@ -2,51 +2,59 @@ import torch
 import cv2
 import numpy as np
 import matplotlib.pyplot as plt
-
-from segment_anything import sam_model_registry, SamAutomaticMaskGenerator
+from mobile_sam import sam_model_registry, SamAutomaticMaskGenerator
 
 # --------------------------------------------------
 # Helper: load image
 # --------------------------------------------------
-def load_image(path):
+def load_image_for_inference(path):
     image = cv2.imread(path)
     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     return image
 
 # --------------------------------------------------
-# Config
+# Configuration
 # --------------------------------------------------
-model_type = "vit_b"  # vit_b | vit_l | vit_h
-checkpoint = "weights/sam_vit_b_01ec64.pth"
-image_path = "photos/good_light_1.png"
+model_type = "vit_t"
+sam_checkpoint = "weights/mobile_sam.pt"
+image_path = "../photos/good_light_1.png"
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
 
 # --------------------------------------------------
 # Load image
 # --------------------------------------------------
-image = load_image(image_path)
+image = load_image_for_inference(image_path)
 
 # --------------------------------------------------
-# Load SAM
+# Load MobileSAM
 # --------------------------------------------------
-sam = sam_model_registry[model_type](checkpoint=checkpoint)
-sam.to(device)
-sam.eval()
+mobile_sam = sam_model_registry[model_type](checkpoint=sam_checkpoint)
+mobile_sam.to(device=device)
+mobile_sam.eval()
 
 # --------------------------------------------------
-# Automatic mask generator
+# Automatic mask generation
 # --------------------------------------------------
 mask_generator = SamAutomaticMaskGenerator(
-    model=sam
+    model=mobile_sam,
+    # points_per_side=32,          # higher = more detail, slower
+    # pred_iou_thresh=0.86,
+    # stability_score_thresh=0.92,
+    # crop_n_layers=1,
+    # crop_n_points_downscale_factor=2,
+    # min_mask_region_area=100     # remove small specks
 )
 
 masks = mask_generator.generate(image)
 
 # --------------------------------------------------
-# Visualization
+# Visualization helpers
 # --------------------------------------------------
-def show_masks(masks, image):
+def show_automatic_masks(masks, image):
+    if len(masks) == 0:
+        return
+
     overlay = image.copy()
 
     for m in masks:
@@ -60,4 +68,7 @@ def show_masks(masks, image):
     plt.axis("off")
     plt.show()
 
-show_masks(masks, image)
+# --------------------------------------------------
+# Display result
+# --------------------------------------------------
+show_automatic_masks(masks, image)

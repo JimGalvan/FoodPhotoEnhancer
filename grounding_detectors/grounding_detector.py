@@ -30,7 +30,7 @@ def load_openclip():
 
 def load_grounding_dino():
     return load_model(
-        "groundingdino/config/GroundingDINO_SwinT_OGC.py",
+        "../groundingdino/config/GroundingDINO_SwinT_OGC.py",
         "models/groundingdino_swint_ogc.pth",
     )
 
@@ -101,4 +101,4 @@ def detect_food(image_path, output_path="food_detected.jpg"):
 # RUN
 # -----------------------------
 if __name__ == "__main__":
-    detect_food("photos/wood_dish_1.png", "test_output/output_food.jpg")
+    detect_food("../photos/wood_dish_1.png", "test_output/output_food.jpg")
