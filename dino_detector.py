@@ -1,0 +1,38 @@
+from groundingdino.util.inference import predict, load_image
+
+
+class DinoDetector:
+    def __init__(self, device, model):
+        self.device = device
+        self.model = model
+
+    def detect_boxes(self, image_path: str, grounding_prompt, box_threshold = 0.25, text_threshold = 0.25):
+        image_source, image = load_image(image_path)
+        h, w, _ = image_source.shape
+
+        boxes, logits, phrases = predict(
+            model=self.model,
+            image=image,
+            caption=grounding_prompt,
+            box_threshold=box_threshold,
+            text_threshold=text_threshold,
+            device=self.device,
+        )
+
+        input_boxes = []
+        for b in boxes:
+            cx, cy, bw, bh = b.tolist()
+            x1 = int((cx - bw / 2) * w)
+            y1 = int((cy - bh / 2) * h)
+            x2 = int((cx + bw / 2) * w)
+            y2 = int((cy + bh / 2) * h)
+
+            x1, y1 = max(0, x1), max(0, y1)
+            x2, y2 = min(w - 1, x2), min(h - 1, y2)
+
+            if x2 > x1 and y2 > y1:
+                input_boxes.append((x1, y1, x2, y2))
+        return image_source, input_boxes
+
+
+
