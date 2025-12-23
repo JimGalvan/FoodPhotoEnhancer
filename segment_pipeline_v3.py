@@ -2,7 +2,7 @@ import torch
 
 from dino.dino_utils import show_input_boxes
 from dino_detector import DinoDetector
-from models import load_openclip, load_grounding_dino, load_sam
+from checkpoints import load_openclip, load_grounding_dino, load_sam
 
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 GROUNDING_PROMPT = (
@@ -16,10 +16,10 @@ if __name__ == "__main__":
     image_path = "photos/wood_dish_1.png"
 
     # sam
-    SAM_CHECKPOINT = "models/sam_vit_b_01ec64.pth"
+    SAM_CHECKPOINT = "checkpoints/sam_vit_b_01ec64.pth"
     SAM_MODEL_TYPE = "vit_b"
 
-    # load models
+    # load checkpoints
     clip_model, preprocess, tokenizer = load_openclip()
     dino_model = load_grounding_dino()
     sam_predictor = load_sam(SAM_CHECKPOINT, SAM_MODEL_TYPE)

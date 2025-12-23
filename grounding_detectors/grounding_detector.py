@@ -31,7 +31,7 @@ def load_openclip():
 def load_grounding_dino():
     return load_model(
         "../groundingdino/config/GroundingDINO_SwinT_OGC.py",
-        "models/groundingdino_swint_ogc.pth",
+        "checkpoints/groundingdino_swint_ogc.pth",
     )
 
 
@@ -58,7 +58,7 @@ def clip_is_food(clip_model, preprocess, tokenizer, crop_img):
 # MAIN PIPELINE
 # -----------------------------
 def detect_food(image_path, output_path="food_detected.jpg"):
-    # Load models
+    # Load checkpoints
     clip_model, clip_preprocess, clip_tokenizer = load_openclip()
     dino_model = load_grounding_dino()
 

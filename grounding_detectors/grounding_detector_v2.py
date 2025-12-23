@@ -46,7 +46,7 @@ def load_openclip():
 def load_grounding_dino():
     return load_model(
         "../groundingdino/config/GroundingDINO_SwinT_OGC.py",
-        "models/groundingdino_swint_ogc.pth",
+        "checkpoints/groundingdino_swint_ogc.pth",
     )
 
 

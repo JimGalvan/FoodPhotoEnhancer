@@ -42,7 +42,7 @@ def load_openclip():
 def load_grounding_dino():
     return load_model(
         "groundingdino/config/GroundingDINO_SwinT_OGC.py",
-        "models/groundingdino_swint_ogc.pth",
+        "checkpoints/groundingdino_swint_ogc.pth",
     )
 
 def load_sam(checkpoint_path: str, model_type: str = "vit_b") -> SamPredictor:
@@ -235,6 +235,6 @@ if __name__ == "__main__":
     grounded_sam_food_and_plates(
         image_path=f"photos/{photo_name}",
         output_path=f"test_output/{photo_name}_grounded_output.png",
-        sam_checkpoint="models/sam_vit_b_01ec64.pth",
+        sam_checkpoint="checkpoints/sam_vit_b_01ec64.pth",
         sam_model_type="vit_b",
     )

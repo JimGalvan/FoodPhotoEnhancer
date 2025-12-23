@@ -1,4 +1,4 @@
 /test_output/
-models/sam_b.pt
-/models/sam_vit_b_01ec64.pth
-/models/
+checkpoints/sam_b.pt
+/checkpoints/sam_vit_b_01ec64.pth
+/checkpoints/

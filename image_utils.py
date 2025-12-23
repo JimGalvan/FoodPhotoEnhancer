@@ -1,7 +1,9 @@
 import cv2
 import numpy as np
 from PIL import Image
-from matplotlib import pyplot as plt
+from matplotlib import pyplot as plt, patches
+
+from core.models import RegionPrompt
 
 
 class ImageUtils:
@@ -30,4 +32,32 @@ class ImageUtils:
             plt.imshow(mask)
             plt.axis('off')
             plt.show()
+
+    @staticmethod
+    def display_regions_with_masks(regions: list[RegionPrompt]):
+        for region in regions:
+            plt.imshow(region.mask)
+            plt.title(region.label)
+            plt.axis('off')
+            plt.show()
+
+    @staticmethod
+    def display_bounding_boxes(image_source: np.ndarray, boxes: list):
+        fig, ax = plt.subplots()
+        ax.imshow(image_source if image_source.ndim == 3 else image_source, cmap="gray")
+
+        for x1, y1, x2, y2 in boxes:
+            ax.add_patch(
+                patches.Rectangle(
+                    (x1, y1),
+                    x2 - x1,
+                    y2 - y1,
+                    fill=False,
+                    edgecolor="lime",
+                    linewidth=2
+                )
+            )
+
+        ax.axis("off")
+        plt.show()
 

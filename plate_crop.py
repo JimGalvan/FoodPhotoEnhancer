@@ -45,7 +45,7 @@ def load_openclip():
 def load_grounding_dino():
     return load_model(
         "groundingdino/config/GroundingDINO_SwinT_OGC.py",
-        "models/groundingdino_swint_ogc.pth",
+        "checkpoints/groundingdino_swint_ogc.pth",
     )
 
 
@@ -221,6 +221,6 @@ def generate_plate_crops(
 if __name__ == "__main__":
     generate_plate_crops(
         image_path="photos/wood_dish_1.png",
-        sam_checkpoint="models/sam_vit_b_01ec64.pth",
+        sam_checkpoint="checkpoints/sam_vit_b_01ec64.pth",
         sam_model_type="vit_b",
     )

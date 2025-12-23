@@ -4,6 +4,8 @@ import torch
 from typing import Dict, Tuple
 from segment_anything import SamPredictor
 
+from core.models import RegionPrompt
+
 
 class SamSegmenter:
     def __init__(
@@ -45,17 +47,18 @@ class SamSegmenter:
             torch.cuda.empty_cache()
 
     @torch.inference_mode()
-    def segment(self, image: np.ndarray, boxes):
+    def segment(self, image: np.ndarray, regions: list[RegionPrompt]):
         with self._lock:
             self._set_image_cached(image)
 
-            masks = []
-            for box in boxes:
-                box = np.asarray(box, dtype=np.float32)
+            regions_with_masks = []
+            for region in regions:
+                box = np.asarray(region.box, dtype=np.float32)
                 mask, _, _ = self.predictor.predict(
                     box=box,
                     multimask_output=False,
                 )
-                masks.append(mask[0].astype(bool))
+                region.mask = mask[0].astype(bool)
+                regions_with_masks.append(region)
 
-            return masks
+            return regions_with_masks

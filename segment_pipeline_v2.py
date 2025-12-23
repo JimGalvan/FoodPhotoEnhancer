@@ -42,7 +42,7 @@ def load_openclip():
 def load_grounding_dino():
     return load_model(
         "groundingdino/config/GroundingDINO_SwinT_OGC.py",
-        "models/groundingdino_swint_ogc.pth",
+        "checkpoints/groundingdino_swint_ogc.pth",
     )
 
 
@@ -226,6 +226,6 @@ if __name__ == "__main__":
     grounded_sam_food_containment(
         image_path="photos/wood_dish_1.png",
         output_path="test_output/wood_dish_1_mask.png",
-        sam_checkpoint="models/sam_vit_b_01ec64.pth",
+        sam_checkpoint="checkpoints/sam_vit_b_01ec64.pth",
         sam_model_type="vit_b",
     )
