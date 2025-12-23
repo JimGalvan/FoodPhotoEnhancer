@@ -1,5 +1,4 @@
 import torch
-from groundingdino.util.inference import load_image, predict
 
 from dino.dino_utils import show_input_boxes
 from dino_detector import DinoDetector
@@ -32,14 +31,14 @@ if __name__ == "__main__":
     )
 
     # detect objects
-    image_source, input_boxes = dino_detector.detect_boxes(
+    image_bgr, input_boxes = dino_detector.detect_boxes(
         image_path,
         grounding_prompt=GROUNDING_PROMPT,
         box_threshold=BOX_THRESHOLD,
         text_threshold=TEXT_THRESHOLD,
     )
 
-    show_input_boxes(image_source, input_boxes)
+    show_input_boxes(image_bgr, input_boxes)
 
 
 

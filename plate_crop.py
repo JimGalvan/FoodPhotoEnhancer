@@ -202,7 +202,7 @@ def generate_plate_crops(
         x1, x2 = xs.min(), xs.max()
         y1, y2 = ys.min(), ys.max()
 
-        # IMPORTANT: do NOT mask pixels out
+        # IMPORTANT: do NOT mask pixels output
         crop = image_rgb[y1:y2, x1:x2]
 
         out_path = os.path.join(

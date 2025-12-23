@@ -1,4 +1,5 @@
 from groundingdino.util.inference import predict, load_image
+from pycparser.ply.yacc import resultlimit
 
 
 class DinoDetector:
@@ -19,7 +20,7 @@ class DinoDetector:
             device=self.device,
         )
 
-        input_boxes = []
+        result_boxes = []
         for b in boxes:
             cx, cy, bw, bh = b.tolist()
             x1 = int((cx - bw / 2) * w)
@@ -31,8 +32,8 @@ class DinoDetector:
             x2, y2 = min(w - 1, x2), min(h - 1, y2)
 
             if x2 > x1 and y2 > y1:
-                input_boxes.append((x1, y1, x2, y2))
-        return image_source, input_boxes
+                result_boxes.append((x1, y1, x2, y2))
+        return image_source, image, result_boxes
 
 
 
