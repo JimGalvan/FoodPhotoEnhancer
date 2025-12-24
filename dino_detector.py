@@ -33,7 +33,7 @@ class DinoDetector:
 
             if x2 > x1 and y2 > y1:
                 result_boxes.append((x1, y1, x2, y2))
-        return image_source, image, result_boxes
+        return image_source, image, result_boxes, phrases
 
 
 

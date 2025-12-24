@@ -1,4 +1,5 @@
 import cv2
+import matplotlib
 import numpy as np
 from PIL import Image
 from matplotlib import pyplot as plt, patches
@@ -61,3 +62,66 @@ class ImageUtils:
         ax.axis("off")
         plt.show()
 
+    @staticmethod
+    def depth_to_cmap(depth, vmin=None, vmax=None):
+        cmap = matplotlib.colormaps.get_cmap("Spectral_r")
+
+        # choose normalization range
+        if vmin is None:
+            vmin = np.nanmin(depth)
+        if vmax is None:
+            vmax = np.nanmax(depth)
+
+        # normalize to [0, 1]
+        depth_norm = (depth - vmin) / (vmax - vmin)
+        depth_norm = np.clip(depth_norm, 0, 1)
+
+        # apply colormap (RGBA in [0,1])
+        colored_depth = cmap(depth_norm)[..., :3]
+
+        # convert to uint8 RGB
+        colored_depth = (colored_depth * 255).astype(np.uint8)
+
+        return colored_depth
+
+    @staticmethod
+    def mask_depth_stat(depth, mask):
+        return np.nanmedian(depth[mask])
+
+
+    @staticmethod
+    def show_mask_depth(mask: np.ndarray,
+                        depth: np.ndarray,
+                        vmin=None,
+                        vmax=None,
+                        title="Mask Depth"):
+
+        if vmin is None:
+            vmin = np.nanmin(depth)
+        if vmax is None:
+            vmax = np.nanmax(depth)
+
+        # create masked depth with NaNs
+        depth_masked = np.full_like(depth, np.nan, dtype=float)
+        depth_masked[mask] = depth[mask]
+
+        media_depth = np.nanmedian(depth_masked)
+
+        plt.imshow(depth_masked, cmap="inferno", vmin=vmin, vmax=vmax)
+        plt.title(f"Median Depth: {media_depth}")
+        plt.colorbar()
+        plt.show()
+
+    @staticmethod
+    def show_depth(depth, title=None, vmin=None, vmax=None, cmap="inferno"):
+        if vmin is None:
+            vmin = np.nanmin(depth)
+        if vmax is None:
+            vmax = np.nanmax(depth)
+
+        plt.imshow(depth, cmap=cmap, vmin=vmin, vmax=vmax)
+        plt.axis("off")
+        plt.colorbar()
+        if title:
+            plt.title(title)
+        plt.show()
