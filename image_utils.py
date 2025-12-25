@@ -91,19 +91,19 @@ class ImageUtils:
 
     @staticmethod
     def show_mask_depth(mask: np.ndarray,
-                        depth: np.ndarray,
+                        image_source_depth: np.ndarray,
                         vmin=None,
                         vmax=None,
                         title="Mask Depth"):
 
         if vmin is None:
-            vmin = np.nanmin(depth)
+            vmin = np.nanmin(image_source_depth)
         if vmax is None:
-            vmax = np.nanmax(depth)
+            vmax = np.nanmax(image_source_depth)
 
         # create masked depth with NaNs
-        depth_masked = np.full_like(depth, np.nan, dtype=float)
-        depth_masked[mask] = depth[mask]
+        depth_masked = np.full_like(image_source_depth, np.nan, dtype=float)
+        depth_masked[mask] = image_source_depth[mask]
 
         media_depth = np.nanmedian(depth_masked)
 
