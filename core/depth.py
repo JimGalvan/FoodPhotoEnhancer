@@ -46,15 +46,18 @@ class Depth:
     @staticmethod
     def compute_mask_depth_stats(total_depth, mask):
         masked_values = total_depth[mask]
-
-        return {
+        stats = {
             "farthest_depth": masked_values.min(),
             "closest_depth": masked_values.max(),
             "mean_depth": np.mean(masked_values),
         }
+        Depth.logger.debug(f"closest_depth: {stats["closest_depth"]}")
+        Depth.logger.debug(f"farthest_depth: {stats["farthest_depth"]}")
+        Depth.logger.debug(f"mean_depth: {stats['mean_depth']}")
+        return stats
 
     @staticmethod
-    def compute_depth_in_range(total_depth: np.ndarray, mask: np.ndarray, range_end=1.5) -> np.ndarray:
+    def compute_depth_in_range(total_depth: np.ndarray, mask: np.ndarray, range_end=1.5) -> float:
         stats = Depth.compute_mask_depth_stats(total_depth, mask)
         closest_depth = stats["closest_depth"]
         farthest_depth = stats["farthest_depth"]
@@ -64,9 +67,8 @@ class Depth:
         percentage = (np.sum(range_mask) / masked_depth.size) * 100
 
         Depth.logger.debug(f"custom_depth_end_range: {custom_depth_end_range}")
-        Depth.logger.debug(f"closest_depth: {stats["closest_depth"]}")
-        Depth.logger.debug(f"farthest_depth: {stats["farthest_depth"]}")
-        Depth.logger.debug(f"Percentage of depth values between {farthest_depth} and {custom_depth_end_range}: {percentage:.2f}%")
+        Depth.logger.debug(
+            f"Percentage of depth values between {farthest_depth} and {custom_depth_end_range}: {percentage:.2f}%")
         return percentage
 
     @staticmethod
@@ -218,3 +220,65 @@ class Depth:
     def get_mask_box_dimension(mask: np.ndarray) -> tuple[Vector2, Vector2]:
         height, width = mask.shape[:2]
         return Vector2(0, 0), Vector2(width, height)
+
+    @staticmethod
+    def find_related_dish_region(
+            depth,
+            main_dish,
+            regions_with_masks,
+            dmin,
+            dmax,
+            init_support_threshold=0.6,
+            reduction_rate=0.9,
+            max_attempts=10,
+            min_increase=0.6,
+    ):
+        curr_threshold = init_support_threshold
+        attempt = 1
+        prev_percentage = None
+        had_significant_increase = False
+        curr_region = None
+        thresholds = []
+        coverages = []
+
+        while attempt <= max_attempts:
+            subject_regions = Depth.get_supported_subject_regions(
+                depth=depth,
+                main_dish=main_dish,
+                regions_with_masks=regions_with_masks,
+                support_threshold=curr_threshold,
+                dmin=dmin,
+                dmax=dmax,
+            )
+
+            if not subject_regions:
+                break
+
+            curr_region = Depth.merge_regions_mask(subject_regions)
+
+            curr_percentage = Depth.compute_depth_in_range(
+                depth,
+                curr_region.mask
+            )
+
+            if prev_percentage is not None and prev_percentage > 0:
+                increase = (curr_percentage - prev_percentage) / prev_percentage
+                if increase >= min_increase:
+                    had_significant_increase = True
+                elif had_significant_increase:
+                    break
+
+            criterion = curr_percentage / 100.0
+            curr_threshold = Math.exp_decay(
+                start_threshold=curr_threshold,
+                criterion=criterion,
+                reduction_rate=reduction_rate
+            )
+
+            thresholds.append(curr_threshold)
+            coverages.append(curr_percentage)
+
+            prev_percentage = curr_percentage
+            attempt += 1
+
+        return curr_region

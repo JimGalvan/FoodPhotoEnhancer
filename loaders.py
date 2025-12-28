@@ -1,50 +1,51 @@
 import os
-
-import open_clip
 import torch
-from depth_anything_v2.dpt import DepthAnythingV2
+
 from groundingdino.util.inference import load_model
 from segment_anything import sam_model_registry, SamPredictor
 
-
-def load_openclip(device: str = "cpu"):
-    model, _, preprocess = open_clip.create_model_and_transforms(
-        "ViT-B-32",
-        pretrained="laion2b_s34b_b79k"
-    )
-    model = model.to(device).eval()
-    tokenizer = open_clip.get_tokenizer("ViT-B-32")
-    return model, preprocess, tokenizer
+from core.settings import DinoDetectorSettings, SamSegmenterSettings, DepthAnythingV2Settings
+from depth_anything_v2.dpt import DepthAnythingV2
 
 
-def load_grounding_dino():
+def load_grounding_dino(settings: DinoDetectorSettings):
     return load_model(
-        "groundingdino/config/GroundingDINO_SwinT_OGC.py",
-        "checkpoints/groundingdino_swint_ogc.pth",
+        settings.model_config_path,
+        settings.model_checkpoint_path,
     )
 
 
-def load_sam(checkpoint_path: str, model_type: str = "vit_b", device: str = "cpu") -> SamPredictor:
-    if not os.path.exists(checkpoint_path):
-        raise FileNotFoundError(f"SAM checkpoint not found: {checkpoint_path}")
+def load_sam(
+        settings: SamSegmenterSettings,
+        device: str = "cpu",
+) -> SamPredictor:
+    if not os.path.exists(settings.checkpoint):
+        raise FileNotFoundError(
+            f"SAM checkpoint not found: {settings.checkpoint}"
+        )
 
-    sam = sam_model_registry[model_type](checkpoint=checkpoint_path)
+    sam = sam_model_registry[settings.sam_model_type](
+        checkpoint=settings.checkpoint
+    )
     sam.to(device=device)
     return SamPredictor(sam)
 
 
-def load_depth_anything_v2(device):
+def load_depth_anything_v2(
+        settings: DepthAnythingV2Settings,
+        device: str = "cpu",
+):
     model = DepthAnythingV2(
-        encoder="vits",
-        features=64,
-        out_channels=[48, 96, 192, 384]
+        encoder=settings.encoder,
+        features=settings.features,
+        out_channels=settings.out_channels,
     )
 
-    model.load_state_dict(
-        torch.load(
-            "checkpoints/depth_anything_v2_vits.pth",
-            map_location="cpu"
-        )
+    state = torch.load(
+        settings.checkpoint_path,
+        map_location=device
     )
-
-    return model.to(device).eval()
+    model.load_state_dict(state)
+    model.to(device)
+    model.eval()
+    return model

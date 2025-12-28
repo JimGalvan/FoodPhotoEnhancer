@@ -34,3 +34,7 @@ class Math:
     def compute_is_overlap(a: Box, b: Box, threshold: float):
         ratio = Math.calc_rel_overlap_ratio(a, b)
         return ratio >= threshold
+
+    @staticmethod
+    def exp_decay(start_threshold, criterion, reduction_rate):
+        return start_threshold * ((1 - reduction_rate) ** criterion)

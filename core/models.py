@@ -56,5 +56,3 @@ class RegionPrompt:
         return hash((location.x, location.y, area))
 
 
-
-
