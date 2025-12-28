@@ -137,3 +137,16 @@ class ImageUtils:
             plt.title(title)
         plt.show()
 
+    @staticmethod
+    def to_float01(image):
+        if image.dtype != np.float32:
+            return image.astype(np.float32) / 255.0
+        return image
+
+    @staticmethod
+    def to_uint8(image):
+        return (np.clip(image, 0.0, 1.0) * 255).astype(np.uint8)
+
+    @staticmethod
+    def gaussian_blur(image, sigma):
+        return cv2.GaussianBlur(image, (0, 0), sigmaX=sigma, sigmaY=sigma)
