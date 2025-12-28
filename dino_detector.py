@@ -1,13 +1,15 @@
 from groundingdino.util.inference import predict, load_image
 from pycparser.ply.yacc import resultlimit
 
+from core.models import Box
+
 
 class DinoDetector:
     def __init__(self, device, model):
         self.device = device
         self.model = model
 
-    def detect_boxes(self, image_path: str, grounding_prompt, box_threshold = 0.25, text_threshold = 0.25):
+    def detect_boxes(self, image_path: str, grounding_prompt, box_threshold=0.25, text_threshold=0.25):
         image_source, image = load_image(image_path)
         h, w, _ = image_source.shape
 
@@ -20,7 +22,7 @@ class DinoDetector:
             device=self.device,
         )
 
-        result_boxes = []
+        result_boxes: list[Box] = []
         for b in boxes:
             cx, cy, bw, bh = b.tolist()
             x1 = int((cx - bw / 2) * w)
@@ -32,8 +34,6 @@ class DinoDetector:
             x2, y2 = min(w - 1, x2), min(h - 1, y2)
 
             if x2 > x1 and y2 > y1:
-                result_boxes.append((x1, y1, x2, y2))
+                box = Box(x1, y1, x2, y2)
+                result_boxes.append(box)
         return image_source, image, result_boxes, phrases
-
-
-

@@ -4,10 +4,17 @@ import numpy as np
 from PIL import Image
 from matplotlib import pyplot as plt, patches
 
-from core.models import RegionPrompt
+from core.models import RegionPrompt, Box, Vector2
 
 
 class ImageUtils:
+
+    @staticmethod
+    def get_center(img: np.ndarray) -> Vector2:
+        h, w, _ = img.shape
+        center_x = w / 2
+        center_y = h / 2
+        return Vector2(center_x, center_y)
 
     @staticmethod
     def convert_img_source_to_pil(img: np.ndarray):
@@ -43,16 +50,21 @@ class ImageUtils:
             plt.show()
 
     @staticmethod
-    def display_bounding_boxes(image_source: np.ndarray, boxes: list):
+    def display_bounding_boxes(image_source: np.ndarray, boxes: list[Box]):
         fig, ax = plt.subplots()
         ax.imshow(image_source if image_source.ndim == 3 else image_source, cmap="gray")
 
-        for x1, y1, x2, y2 in boxes:
+        for box in boxes:
+            x1 = box.x_min
+            y1 = box.y_min
+            width = box.get_width()
+            height = box.get_height()
+
             ax.add_patch(
                 patches.Rectangle(
                     (x1, y1),
-                    x2 - x1,
-                    y2 - y1,
+                    width,
+                    height,
                     fill=False,
                     edgecolor="lime",
                     linewidth=2
@@ -88,7 +100,6 @@ class ImageUtils:
     def mask_depth_stat(depth, mask):
         return np.nanmedian(depth[mask])
 
-
     @staticmethod
     def show_mask_depth(mask: np.ndarray,
                         image_source_depth: np.ndarray,
@@ -108,7 +119,7 @@ class ImageUtils:
         media_depth = np.nanmedian(depth_masked)
 
         plt.imshow(depth_masked, cmap="inferno", vmin=vmin, vmax=vmax)
-        plt.title(f"Median Depth: {media_depth}")
+        plt.title(f"{title} - Median Depth: {media_depth}")
         plt.colorbar()
         plt.show()
 
@@ -125,3 +136,4 @@ class ImageUtils:
         if title:
             plt.title(title)
         plt.show()
+

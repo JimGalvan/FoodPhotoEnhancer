@@ -9,10 +9,10 @@ from core.models import RegionPrompt
 
 class SamSegmenter:
     def __init__(
-        self,
-        predictor: SamPredictor,
-        max_cache_size: int = 8,
-        device: str = "cuda",
+            self,
+            predictor: SamPredictor,
+            max_cache_size: int = 8,
+            device: str = "cuda",
     ):
         self.predictor = predictor
         self.device = device
@@ -47,13 +47,14 @@ class SamSegmenter:
             torch.cuda.empty_cache()
 
     @torch.inference_mode()
-    def segment(self, image: np.ndarray, regions: list[RegionPrompt]):
+    def segment(self, image: np.ndarray, regions: list[RegionPrompt]) -> list[RegionPrompt]:
         with self._lock:
             self._set_image_cached(image)
 
             regions_with_masks = []
             for region in regions:
-                box = np.asarray(region.box, dtype=np.float32)
+                coordinates = region.box.get_coordinates_as_array()
+                box = np.asarray(coordinates, dtype=np.float32)
                 mask, _, _ = self.predictor.predict(
                     box=box,
                     multimask_output=False,
