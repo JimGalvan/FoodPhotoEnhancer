@@ -150,3 +150,16 @@ class ImageUtils:
     @staticmethod
     def gaussian_blur(image, sigma):
         return cv2.GaussianBlur(image, (0, 0), sigmaX=sigma, sigmaY=sigma)
+
+    @staticmethod
+    def compare_images(image_source: np.ndarray, enhanced: np.ndarray):
+        plt.figure(figsize=(10, 5))
+        plt.subplot(1, 2, 1)
+        plt.imshow(image_source)
+        plt.axis("off")
+
+        plt.subplot(1, 2, 2)
+        plt.imshow(enhanced)
+        plt.axis("off")
+        plt.tight_layout()
+        plt.show()
