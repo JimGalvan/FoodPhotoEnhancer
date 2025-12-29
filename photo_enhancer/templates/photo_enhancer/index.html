@@ -1,0 +1,59 @@
+{% extends "photo_enhancer/base.html" %}
+
+{% block title %}Photo Enhancer{% endblock %}
+
+{% block content %}
+<div class="max-w-md mx-auto px-4">
+    <h1 class="text-2xl font-bold mb-4 text-center">Take a Photo</h1>
+
+    <form
+        id="photo-form"
+        hx-post="{% url 'upload_photo' %}"
+        hx-target="#result"
+        hx-encoding="multipart/form-data"
+        hx-indicator="#loading"
+        class="space-y-4"
+    >
+        {% csrf_token %}
+
+        <input
+            type="file"
+            name="photo"
+            accept="image/*"
+            capture="environment"
+            class="block w-full text-sm text-gray-700"
+            required
+        >
+
+        <button
+            type="submit"
+            class="w-full py-2 bg-blue-600 text-white rounded font-semibold"
+        >
+            Take Photo & Upload
+        </button>
+
+        <button
+            type="button"
+            onclick="document.getElementById('photo-form').reset()"
+            class="w-full py-2 bg-gray-300 text-gray-800 rounded font-semibold"
+        >
+            Cancel
+        </button>
+    </form>
+
+    <div id="loading" class="hidden mt-4 text-center text-gray-600">
+        Processing photo…
+    </div>
+
+    <div id="result" class="mt-6"></div>
+</div>
+
+<script>
+    document.body.addEventListener("htmx:beforeRequest", () => {
+        document.getElementById("loading").classList.remove("hidden")
+    })
+    document.body.addEventListener("htmx:afterRequest", () => {
+        document.getElementById("loading").classList.add("hidden")
+    })
+</script>
+{% endblock %}

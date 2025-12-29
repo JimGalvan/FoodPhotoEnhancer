@@ -3,12 +3,12 @@ import logging
 import numpy as np
 
 from core.depth import Depth
-from core.math import Math
 from core.models import RegionPrompt
 from dino_detector import DinoDetector
 from image_utils import ImageUtils
 from loaders import load_grounding_dino, load_sam, load_depth_anything_v2
 from sam_segmenter import SamSegmenter
+
 
 class DinoDetectorSettings:
     def __init__(
@@ -157,6 +157,7 @@ class SubjectIsolationPipeline:
             regions_with_masks=regions_with_masks,
             dmin=dmin,
             dmax=dmax,
+            max_attempts=5
         )
 
         self.logger.info("Subject detection pipeline completed")

@@ -23,5 +23,5 @@ class MaskProcessor:
         return filled.astype(np.float32) / 255.0
 
     @staticmethod
-    def soften(mask, sigma=3):
+    def soften(mask, sigma=0.1):
         return cv2.GaussianBlur(mask, (0, 0), sigma)[..., None]

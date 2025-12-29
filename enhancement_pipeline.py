@@ -17,7 +17,7 @@ class EnhancementPipeline:
         logger.info("pipeline:start")
 
         logger.info("mask:fill_holes")
-        mask_filled = MaskProcessor.fill_holes(self.mask)
+        mask_filled = MaskProcessor.fill_holes(self.mask, kernel_size=16)
         logger.debug(
             "mask_filled stats | min=%.3f max=%.3f mean=%.3f",
             mask_filled.min(),
@@ -26,7 +26,7 @@ class EnhancementPipeline:
         )
 
         logger.info("mask:soften")
-        mask_soft = MaskProcessor.soften(mask_filled)
+        mask_soft = MaskProcessor.soften(mask_filled, sigma=0.005)
         logger.debug("mask_soft shape=%s", mask_soft.shape)
 
         logger.info("subject:enhance")

@@ -230,7 +230,7 @@ class Depth:
             dmax,
             init_support_threshold=0.6,
             reduction_rate=0.9,
-            max_attempts=10,
+            max_attempts=3,
             min_increase=0.6,
     ):
         curr_threshold = init_support_threshold
