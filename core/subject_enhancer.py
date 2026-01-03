@@ -12,7 +12,7 @@ class SubjectEnhancer:
         x[..., 2] *= 0.97
         x = np.clip(x, 0.0, 1.0)
 
-        x = LightingUtils.window_light(x, gamma=0.85)
+        x = LightingUtils.window_light(x, gamma=0.90)
 
         mean = x.mean(axis=(0, 1), keepdims=True)
         x = x + 0.05 * (x - mean)

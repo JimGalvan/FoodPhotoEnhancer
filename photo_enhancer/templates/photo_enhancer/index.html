@@ -3,57 +3,350 @@
 {% block title %}Photo Enhancer{% endblock %}
 
 {% block content %}
-<div class="max-w-md mx-auto px-4">
-    <h1 class="text-2xl font-bold mb-4 text-center">Take a Photo</h1>
-
-    <form
-        id="photo-form"
-        hx-post="{% url 'upload_photo' %}"
-        hx-target="#result"
-        hx-encoding="multipart/form-data"
-        hx-indicator="#loading"
-        class="space-y-4"
-    >
-        {% csrf_token %}
-
-        <input
-            type="file"
-            name="photo"
-            accept="image/*"
-            capture="environment"
-            class="block w-full text-sm text-gray-700"
-            required
-        >
-
-        <button
-            type="submit"
-            class="w-full py-2 bg-blue-600 text-white rounded font-semibold"
-        >
-            Take Photo & Upload
-        </button>
-
-        <button
-            type="button"
-            onclick="document.getElementById('photo-form').reset()"
-            class="w-full py-2 bg-gray-300 text-gray-800 rounded font-semibold"
-        >
-            Cancel
-        </button>
-    </form>
-
-    <div id="loading" class="hidden mt-4 text-center text-gray-600">
-        Processing photo…
+<div class="max-w-6xl mx-auto px-4">
+    <!-- Privacy Notice -->
+    <div id="privacyNotice" class="hidden mb-4 bg-emerald-900 bg-opacity-50 border border-emerald-700 rounded-lg p-4">
+        <div class="flex items-start justify-between gap-4">
+            <div class="flex-1">
+                <p class="text-sm text-gray-200">
+                    <span class="font-semibold">Privacy Notice:</span> All photos are stored locally in your browser only. Nothing is uploaded to or stored on any remote server. Your photos remain private on your device.
+                </p>
+            </div>
+            <button onclick="dismissPrivacyNotice()" class="text-gray-400 hover:text-gray-200 flex-shrink-0">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+        </div>
     </div>
 
-    <div id="result" class="mt-6"></div>
+    <!-- Tab Navigation -->
+    <div class="flex gap-2 mb-6 border-b border-gray-700">
+        <button onclick="showTab('upload')" id="uploadTab" class="px-6 py-3 font-semibold border-b-2 border-emerald-600 text-emerald-500">
+            Upload
+        </button>
+        <button onclick="showTab('history')" id="historyTab" class="px-6 py-3 font-semibold border-b-2 border-transparent text-gray-400 hover:text-gray-200">
+            History
+        </button>
+    </div>
+
+    <!-- Upload Section -->
+    <div id="uploadSection">
+        <div class="max-w-md mx-auto mb-8">
+            <h1 class="text-2xl font-bold mb-4 text-center text-gray-100">Take a Photo</h1>
+
+            <form
+                id="photo-form"
+                hx-post="{% url 'upload_photo' %}"
+                hx-target="#result"
+                hx-encoding="multipart/form-data"
+                hx-indicator="#loading"
+                class="space-y-4"
+            >
+                {% csrf_token %}
+
+                <input
+                    id="photoInput"
+                    type="file"
+                    name="photo"
+                    accept="image/*"
+                    capture="environment"
+                    class="block w-full text-sm text-gray-300 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:bg-gray-700 file:text-gray-100 hover:file:bg-gray-600"
+                    onchange="previewPhoto(event)"
+                    required
+                >
+
+                <button
+                    id="submitButton"
+                    type="submit"
+                    class="w-full py-2 bg-emerald-600 text-white rounded font-semibold hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                    Enhance Photo
+                </button>
+
+                <button
+                    type="button"
+                    onclick="resetForm()"
+                    class="w-full py-2 bg-gray-700 text-gray-100 rounded font-semibold hover:bg-gray-600"
+                >
+                    Cancel
+                </button>
+            </form>
+
+            <div id="loading" class="hidden mt-4 text-center text-gray-300">
+                Processing photo…
+            </div>
+        </div>
+
+        <!-- Before/After Preview -->
+        <div id="previewContainer" class="hidden">
+            <h2 class="text-xl font-semibold mb-4 text-center text-gray-100">Results</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+                <div class="bg-gray-800 rounded-lg p-4">
+                    <h3 class="text-sm font-semibold mb-2 text-gray-300">Before</h3>
+                    <img
+                        id="photoPreview"
+                        class="w-full rounded-lg border border-gray-700"
+                        alt="Original photo"
+                    />
+                </div>
+                <div class="bg-gray-800 rounded-lg p-4">
+                    <h3 class="text-sm font-semibold mb-2 text-gray-300">After</h3>
+                    <div id="result"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- History Section -->
+    <div id="historySection" class="hidden">
+        <div class="mb-6">
+            <h1 class="text-2xl font-bold mb-4 text-gray-100">Photo History</h1>
+
+            <!-- Date Search -->
+            <div class="flex gap-2 mb-4">
+                <input
+                    type="date"
+                    id="searchDate"
+                    class="flex-1 px-4 py-2 bg-gray-800 border border-gray-700 rounded text-gray-100"
+                    onchange="filterHistory()"
+                >
+                <button
+                    onclick="clearSearch()"
+                    class="px-4 py-2 bg-gray-700 text-gray-100 rounded hover:bg-gray-600"
+                >
+                    Clear
+                </button>
+            </div>
+        </div>
+
+        <!-- History Grid -->
+        <div id="historyGrid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            <!-- Photos will be loaded here -->
+        </div>
+
+        <div id="emptyHistory" class="hidden text-center py-12 text-gray-400">
+            <p>No photos yet. Upload your first photo!</p>
+        </div>
+    </div>
+</div>
+
+<!-- Modal for viewing full size -->
+<div id="photoModal" class="hidden fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-50" onclick="closeModal(event)">
+    <div class="bg-gray-800 rounded-lg max-w-6xl w-full max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
+        <div class="sticky top-0 bg-gray-800 border-b border-gray-700 p-4 flex justify-between items-center">
+            <h3 class="text-lg font-semibold text-gray-100" id="modalDate"></h3>
+            <button onclick="closeModal()" class="text-gray-400 hover:text-gray-200 text-2xl">&times;</button>
+        </div>
+        <div class="p-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <h4 class="text-sm font-semibold mb-2 text-gray-300">Before</h4>
+                    <img id="modalBefore" class="w-full rounded-lg border border-gray-700" alt="Before">
+                </div>
+                <div>
+                    <h4 class="text-sm font-semibold mb-2 text-gray-300">After</h4>
+                    <img id="modalAfter" class="w-full rounded-lg border border-gray-700" alt="After">
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 <script>
+    // Tab Navigation
+    function showTab(tab) {
+        const uploadSection = document.getElementById('uploadSection');
+        const historySection = document.getElementById('historySection');
+        const uploadTab = document.getElementById('uploadTab');
+        const historyTab = document.getElementById('historyTab');
+
+        if (tab === 'upload') {
+            uploadSection.classList.remove('hidden');
+            historySection.classList.add('hidden');
+            uploadTab.classList.add('border-emerald-600', 'text-emerald-500');
+            uploadTab.classList.remove('border-transparent', 'text-gray-400');
+            historyTab.classList.remove('border-emerald-600', 'text-emerald-500');
+            historyTab.classList.add('border-transparent', 'text-gray-400');
+        } else {
+            uploadSection.classList.add('hidden');
+            historySection.classList.remove('hidden');
+            historyTab.classList.add('border-emerald-600', 'text-emerald-500');
+            historyTab.classList.remove('border-transparent', 'text-gray-400');
+            uploadTab.classList.remove('border-emerald-600', 'text-emerald-500');
+            uploadTab.classList.add('border-transparent', 'text-gray-400');
+            loadHistory();
+        }
+    }
+
+    // Privacy Notice Functions
+    function checkPrivacyNotice() {
+        const dismissed = localStorage.getItem('privacyNoticeDismissed');
+        if (!dismissed) {
+            document.getElementById('privacyNotice').classList.remove('hidden');
+        }
+    }
+
+    function dismissPrivacyNotice() {
+        localStorage.setItem('privacyNoticeDismissed', 'true');
+        document.getElementById('privacyNotice').classList.add('hidden');
+    }
+
+    // Local Storage Functions
+    function saveToHistory(beforeImage, afterImage) {
+        const photos = JSON.parse(localStorage.getItem('photoHistory') || '[]');
+        photos.unshift({
+            id: Date.now(),
+            timestamp: new Date().toISOString(),
+            before: beforeImage,
+            after: afterImage
+        });
+        localStorage.setItem('photoHistory', JSON.stringify(photos));
+    }
+
+    function getHistory(filterDate = null) {
+        const photos = JSON.parse(localStorage.getItem('photoHistory') || '[]');
+        if (filterDate) {
+            return photos.filter(photo => {
+                const photoDate = new Date(photo.timestamp).toISOString().split('T')[0];
+                return photoDate === filterDate;
+            });
+        }
+        return photos;
+    }
+
+    // Preview Photo
+    function previewPhoto(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const img = document.getElementById("photoPreview");
+        img.src = URL.createObjectURL(file);
+        document.getElementById('previewContainer').classList.remove('hidden');
+    }
+
+    // Reset Form
+    function resetForm() {
+        document.getElementById('photo-form').reset();
+        document.getElementById('previewContainer').classList.add('hidden');
+        document.getElementById('result').innerHTML = '';
+    }
+
+    // Load History
+    function loadHistory() {
+        const photos = getHistory();
+        const grid = document.getElementById('historyGrid');
+        const empty = document.getElementById('emptyHistory');
+
+        if (photos.length === 0) {
+            grid.innerHTML = '';
+            empty.classList.remove('hidden');
+            return;
+        }
+
+        empty.classList.add('hidden');
+        grid.innerHTML = photos.map(photo => {
+            const date = new Date(photo.timestamp);
+            const dateStr = date.toLocaleDateString();
+            const timeStr = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+            return `
+                <div class="bg-gray-800 rounded-lg overflow-hidden cursor-pointer hover:ring-2 hover:ring-emerald-500 transition" onclick="openModal(${photo.id})">
+                    <div class="aspect-square relative">
+                        <img src="${photo.after}" class="w-full h-full object-cover" alt="Processed photo">
+                    </div>
+                    <div class="p-2">
+                        <p class="text-xs text-gray-400">${dateStr}</p>
+                        <p class="text-xs text-gray-500">${timeStr}</p>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    // Filter History
+    function filterHistory() {
+        const searchDate = document.getElementById('searchDate').value;
+        const photos = getHistory(searchDate);
+        const grid = document.getElementById('historyGrid');
+        const empty = document.getElementById('emptyHistory');
+
+        if (photos.length === 0) {
+            grid.innerHTML = '';
+            empty.classList.remove('hidden');
+            empty.querySelector('p').textContent = 'No photos found for this date.';
+            return;
+        }
+
+        empty.classList.add('hidden');
+        grid.innerHTML = photos.map(photo => {
+            const date = new Date(photo.timestamp);
+            const dateStr = date.toLocaleDateString();
+            const timeStr = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+            return `
+                <div class="bg-gray-800 rounded-lg overflow-hidden cursor-pointer hover:ring-2 hover:ring-emerald-500 transition" onclick="openModal(${photo.id})">
+                    <div class="aspect-square relative">
+                        <img src="${photo.after}" class="w-full h-full object-cover" alt="Processed photo">
+                    </div>
+                    <div class="p-2">
+                        <p class="text-xs text-gray-400">${dateStr}</p>
+                        <p class="text-xs text-gray-500">${timeStr}</p>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    // Clear Search
+    function clearSearch() {
+        document.getElementById('searchDate').value = '';
+        loadHistory();
+    }
+
+    // Modal Functions
+    function openModal(photoId) {
+        const photos = getHistory();
+        const photo = photos.find(p => p.id === photoId);
+        if (!photo) return;
+
+        const date = new Date(photo.timestamp);
+        document.getElementById('modalDate').textContent = date.toLocaleString();
+        document.getElementById('modalBefore').src = photo.before;
+        document.getElementById('modalAfter').src = photo.after;
+        document.getElementById('photoModal').classList.remove('hidden');
+    }
+
+    function closeModal(event) {
+        if (!event || event.target.id === 'photoModal' || event.type === 'click') {
+            document.getElementById('photoModal').classList.add('hidden');
+        }
+    }
+
+    // HTMX Event Handlers
     document.body.addEventListener("htmx:beforeRequest", () => {
-        document.getElementById("loading").classList.remove("hidden")
-    })
-    document.body.addEventListener("htmx:afterRequest", () => {
-        document.getElementById("loading").classList.add("hidden")
-    })
+        document.getElementById("loading").classList.remove("hidden");
+        document.getElementById("photoInput").disabled = true;
+        document.getElementById("submitButton").disabled = true;
+    });
+
+    document.body.addEventListener("htmx:afterRequest", (event) => {
+        document.getElementById("loading").classList.add("hidden");
+        document.getElementById("photoInput").disabled = false;
+        document.getElementById("submitButton").disabled = false;
+
+        if (event.detail.successful) {
+            // Get the before and after images
+            const beforeImg = document.getElementById("photoPreview").src;
+            const afterImg = document.getElementById("result").querySelector('img');
+
+            if (afterImg) {
+                saveToHistory(beforeImg, afterImg.src);
+            }
+        }
+    });
+
+    // Initialize on page load
+    checkPrivacyNotice();
 </script>
 {% endblock %}

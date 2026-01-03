@@ -62,7 +62,7 @@ def upload_photo(request):
 
         return HttpResponse(
             f"""
-            <p class="text-green-600 font-semibold mb-4">Photo processed successfully ✅</p>
+            <p class="text-green-600 font-semibold mb-4">Photo processed successfully</p>
             <img src="data:image/jpeg;base64,{img_str}" class="w-full rounded shadow" />
             """
         )
