@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
     <title>{% block title %}Django App{% endblock %}</title>
 
     <!-- Tailwind CDN -->
@@ -12,9 +13,17 @@
 </head>
 <body class="bg-gray-900 text-gray-100">
 
-    <main class="mx-auto p-6">
+    <main classmx-auto p-6">
         {% block content %}{% endblock %}
     </main>
+
+    <footer class="bg-gray-800 border-t border-gray-700 mt-12 py-6">
+        <div class="max-w-7xl mx-auto px-6 text-center">
+            <p class="text-gray-400">
+                Made by <a href="https://jimgalvan.github.io/" target="_blank" class="text-blue-400 hover:text-blue-300 transition-colors">Jim Galvan</a>
+            </p>
+        </div>
+    </footer>
 
 </body>
 </html>
