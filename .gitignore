@@ -4,3 +4,4 @@ checkpoints/sam_b.pt
 /checkpoints/
 /temp/
 .env
+/photos/
