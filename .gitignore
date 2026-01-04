@@ -3,3 +3,4 @@ checkpoints/sam_b.pt
 /checkpoints/sam_vit_b_01ec64.pth
 /checkpoints/
 /temp/
+.env

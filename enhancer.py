@@ -3,6 +3,7 @@ import logging
 import torch
 
 from core.constants import Constants
+from core.model_path_resolver import ModelPathResolver
 from core.settings import (
     DinoDetectorSettings,
     SamSegmenterSettings,
@@ -19,15 +20,15 @@ def get_subject_isolation_pipeline():
     logger.info("Subject seg pipeline device: %s", device)
 
     dino_settings = DinoDetectorSettings(
-        model_config_path="dino/config/GroundingDINO_SwinT_OGC.py",
-        model_checkpoint_path="checkpoints/groundingdino_swint_ogc.pth",
+        model_config_path=ModelPathResolver.get_dino_config(),
+        model_checkpoint_path=ModelPathResolver.get_dino_checkpoint(),
         grounding_prompt=Constants.GROUNDING_PROMPT,
         box_threshold=0.30,
         text_threshold=0.30,
     )
 
     sam_settings = SamSegmenterSettings(
-        checkpoint="checkpoints/sam_vit_b_01ec64.pth",
+        checkpoint=ModelPathResolver.get_sam_checkpoint(),
         sam_model_type="vit_b",
     )
 
@@ -35,7 +36,7 @@ def get_subject_isolation_pipeline():
         encoder="vits",
         features=64,
         out_channels=(48, 96, 192, 384),
-        checkpoint_path="checkpoints/depth_anything_v2_vits.pth",
+        checkpoint_path=ModelPathResolver.get_depth_checkpoint(),
     )
 
     return SubjectIsolationPipeline(
