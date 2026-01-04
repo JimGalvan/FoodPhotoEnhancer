@@ -7,7 +7,8 @@ from pathlib import Path
 import numpy as np
 from PIL import Image
 from django.shortcuts import render
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
+from django.views.decorators.csrf import csrf_exempt
 
 from enhancement_pipeline import EnhancementPipeline
 from config import settings
@@ -39,8 +40,15 @@ def delete_file(path: str) -> None:
         p.unlink()
 
 
+@csrf_exempt
 def upload_photo(request):
-    if request.method == 'POST' and request.FILES.get('photo'):
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Only POST method is allowed'}, status=405)
+
+    if not request.FILES.get('photo'):
+        return JsonResponse({'error': 'No photo file provided'}, status=400)
+
+    try:
         photo = request.FILES['photo']
         path = save_temp_photo(photo)
 
@@ -69,9 +77,11 @@ def upload_photo(request):
         image.save(buffer, format="JPEG")
         img_str = base64.b64encode(buffer.getvalue()).decode()
 
-        return HttpResponse(
-            f"""
-            <p class="text-green-600 font-semibold mb-4">Photo processed successfully</p>
-            <img src="data:image/jpeg;base64,{img_str}" class="w-full rounded shadow" />
-            """
-        )
+        return JsonResponse({
+            'success': True,
+            'message': 'Photo processed successfully',
+            'image': f'data:image/jpeg;base64,{img_str}'
+        })
+
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
