@@ -4,8 +4,8 @@ import torch
 from groundingdino.util.inference import load_model
 from segment_anything import sam_model_registry, SamPredictor
 
+from core.Depth_Anything_V2.depth_anything_v2.dpt import DepthAnythingV2
 from core.settings import DinoDetectorSettings, SamSegmenterSettings, DepthAnythingV2Settings
-from depth_anything_v2.dpt import DepthAnythingV2
 
 
 def load_grounding_dino(settings: DinoDetectorSettings):
