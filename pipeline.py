@@ -17,7 +17,7 @@ if __name__ == "__main__":
     logging.info(f"DEVICE: {DEVICE}")
 
     dino_settings = DinoDetectorSettings(
-        model_config_path="groundingdino/config/GroundingDINO_SwinT_OGC.py",
+        model_config_path="dino/config/GroundingDINO_SwinT_OGC.py",
         model_checkpoint_path="checkpoints/groundingdino_swint_ogc.pth",
         grounding_prompt=Constants.GROUNDING_PROMPT,
         box_threshold=0.3,

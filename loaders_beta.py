@@ -19,7 +19,7 @@ def load_openclip(device: str = "cpu"):
 
 def load_grounding_dino():
     return load_model(
-        "groundingdino/config/GroundingDINO_SwinT_OGC.py",
+        "dino/config/GroundingDINO_SwinT_OGC.py",
         "checkpoints/groundingdino_swint_ogc.pth",
     )
 
