@@ -1,7 +1,9 @@
 import logging
 
+import numpy as np
+
 from core.mask_processor import MaskProcessor
-from core.subject_enhancer import SubjectEnhancer
+from core.photo_enhancer import PhotoEnhancer
 from image_utils import ImageUtils
 
 logger = logging.getLogger(__name__)
@@ -30,7 +32,7 @@ class EnhancementPipeline:
         logger.debug("mask_soft shape=%s", mask_soft.shape)
 
         logger.info("subject:enhance")
-        subject = SubjectEnhancer.enhance(self.image)
+        subject = PhotoEnhancer.enhance(self.image)
         logger.debug(
             "subject stats | min=%.3f max=%.3f mean=%.3f",
             subject.min(),
@@ -38,8 +40,15 @@ class EnhancementPipeline:
             subject.mean(),
         )
 
+        logger.info("subject:food_color_boost")
+        subject = PhotoEnhancer.boost_food_colors(subject)
+
         logger.info("background:blur")
-        background = ImageUtils.gaussian_blur(self.image, sigma=4)
+        background = ImageUtils.gaussian_blur(self.image, sigma=2)
+
+        logger.info("background:vignette")
+        vignette = PhotoEnhancer.create_vignette(background.shape)
+        background = background * vignette
 
         logger.info("composite:blend")
         final = mask_soft * subject + (1.0 - mask_soft) * background

@@ -2,6 +2,7 @@ import base64
 import os
 import uuid
 from io import BytesIO
+from pathlib import Path
 
 import numpy as np
 from PIL import Image
@@ -32,6 +33,11 @@ def save_temp_photo(photo):
     return path
 
 
+def delete_file(path: str) -> None:
+    p = Path(path)
+    if p.exists() and p.is_file():
+        p.unlink()
+
 
 def upload_photo(request):
     if request.method == 'POST' and request.FILES.get('photo'):
@@ -40,6 +46,9 @@ def upload_photo(request):
 
         subject_pipeline = get_subject_isolation_pipeline()
         subject_region, total_depth, _, _, image_source = subject_pipeline.find_subject(path)
+
+        # remove temp file
+        delete_file(path)
 
         enhance_pipeline = EnhancementPipeline(
             image=image_source,
