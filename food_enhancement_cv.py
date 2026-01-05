@@ -66,7 +66,7 @@ def add_vignette(img, strength=0.25):
 
 # ==================================================
 # MAIN ENHANCEMENT PIPELINE
-# ==================================================
+# =================================================
 def enhance_food_plate(img_rgb):
     """
     img_rgb: RGB numpy array (plate crop, background already removed)
