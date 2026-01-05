@@ -51,9 +51,9 @@ class Depth:
             "closest_depth": masked_values.max(),
             "mean_depth": np.mean(masked_values),
         }
-        Depth.logger.debug(f"closest_depth: {stats["closest_depth"]}")
-        Depth.logger.debug(f"farthest_depth: {stats["farthest_depth"]}")
-        Depth.logger.debug(f"mean_depth: {stats['mean_depth']}")
+        Depth.logger.debug("closest_depth: %s", stats.get("closest_depth"))
+        Depth.logger.debug("farthest_depth: %s", stats.get("farthest_depth"))
+        Depth.logger.debug("mean_depth: %s", stats.get("mean_depth"))
         return stats
 
     @staticmethod
