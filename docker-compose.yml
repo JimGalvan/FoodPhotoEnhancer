@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - DJANGO_SETTINGS_MODULE=config.settings
+    volumes:
+      # Optional: Mount for development hot-reload
+      # - .:/app
+      # Persist uploaded photos and checkpoints
+      - photos-data:/app/photos
+      - checkpoints-data:/app/checkpoints
+      - temp-data:/app/temp
+    restart: unless-stopped
+    # Optional: Add health check
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+volumes:
+  photos-data:
+  checkpoints-data:
+  temp-data:
