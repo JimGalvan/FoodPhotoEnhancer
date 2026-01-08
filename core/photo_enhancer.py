@@ -26,7 +26,7 @@ class PhotoEnhancer:
         return x
 
     @staticmethod
-    def boost_food_colors(image, saturation=1.15, warmth_red=1.05, warmth_yellow=1.02):
+    def boost_food_colors(image, saturation=0.90, warmth_red=1.05, warmth_yellow=1.02):
         gray = image.mean(axis=2, keepdims=True)
         enhanced = gray + saturation * (image - gray)
         enhanced[..., 0] *= warmth_red

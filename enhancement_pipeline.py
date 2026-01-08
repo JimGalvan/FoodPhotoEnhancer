@@ -44,7 +44,7 @@ class EnhancementPipeline:
         subject = PhotoEnhancer.boost_food_colors(subject)
 
         logger.info("background:blur")
-        background = ImageUtils.gaussian_blur(self.image, sigma=2)
+        background = ImageUtils.gaussian_blur(self.image, sigma=3)
 
         logger.info("background:vignette")
         vignette = PhotoEnhancer.create_vignette(background.shape)

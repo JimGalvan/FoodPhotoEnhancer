@@ -4,6 +4,7 @@ import uuid
 from io import BytesIO
 from pathlib import Path
 
+import cv2
 import numpy as np
 from PIL import Image
 from django.shortcuts import render
@@ -13,6 +14,8 @@ from django.views.decorators.csrf import csrf_exempt
 from enhancement_pipeline import EnhancementPipeline
 from config import settings
 from enhancer import get_subject_isolation_pipeline
+
+subject_sessions = {}
 
 
 def index(request):
@@ -55,31 +58,72 @@ def upload_photo(request):
         subject_pipeline = get_subject_isolation_pipeline()
         subject_region, total_depth, _, _, image_source = subject_pipeline.find_subject(path)
 
-        # remove temp file
         delete_file(path)
 
-        enhance_pipeline = EnhancementPipeline(
-            image=image_source,
-            mask=subject_region.mask
-        )
-        final, clean_mask = enhance_pipeline.run()
-        image = Image.fromarray(final.astype("uint8"))
+        session_id = str(uuid.uuid4())
+        subject_sessions[session_id] = {
+            'subject_region': subject_region,
+            'total_depth': total_depth,
+            'image_source': image_source
+        }
 
-        arr = final
+        preview_image = image_source.copy()
+        mask = (subject_region.mask * 255).astype(np.uint8)
+        contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        cv2.drawContours(preview_image, contours, -1, (0, 255, 0), 3)
 
-        if arr.dtype != np.uint8:
-            arr = np.clip(arr, 0, 1)
-            arr = (arr * 255).astype("uint8")
+        if preview_image.dtype != np.uint8:
+            preview_image = np.clip(preview_image, 0, 255).astype(np.uint8)
 
-        image = Image.fromarray(arr)
-
+        image = Image.fromarray(preview_image)
         buffer = BytesIO()
         image.save(buffer, format="JPEG")
         img_str = base64.b64encode(buffer.getvalue()).decode()
 
         return JsonResponse({
             'success': True,
-            'message': 'Photo processed successfully',
+            'message': 'Subject detected successfully',
+            'session_id': session_id,
+            'image': f'data:image/jpeg;base64,{img_str}'
+        })
+
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+@csrf_exempt
+def enhance_photo(request):
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Only POST method is allowed'}, status=405)
+
+    session_id = request.POST.get('session_id')
+    if not session_id or session_id not in subject_sessions:
+        return JsonResponse({'error': 'Invalid or expired session'}, status=400)
+
+    try:
+        session_data = subject_sessions.pop(session_id)
+        subject_region = session_data['subject_region']
+        image_source = session_data['image_source']
+
+        enhance_pipeline = EnhancementPipeline(
+            image=image_source,
+            mask=subject_region.mask
+        )
+        final, clean_mask = enhance_pipeline.run()
+
+        arr = final
+        if arr.dtype != np.uint8:
+            arr = np.clip(arr, 0, 1)
+            arr = (arr * 255).astype("uint8")
+
+        image = Image.fromarray(arr)
+        buffer = BytesIO()
+        image.save(buffer, format="JPEG")
+        img_str = base64.b64encode(buffer.getvalue()).decode()
+
+        return JsonResponse({
+            'success': True,
+            'message': 'Photo enhanced successfully',
             'image': f'data:image/jpeg;base64,{img_str}'
         })
 
