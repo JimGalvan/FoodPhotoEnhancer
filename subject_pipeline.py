@@ -63,7 +63,7 @@ class SubjectIsolationPipeline:
             depth_anything_settings: DepthAnythingV2Settings
     ):
         self.logger.info("Initializing SubjectIsolationPipeline")
-
+        print(f"SubjectIsolationPipeline device: {device}")
         if device not in ["cpu", "cuda"]:
             self.logger.error(f"Unsupported device: {device}")
             raise ValueError(f"Device {device} is not supported")
