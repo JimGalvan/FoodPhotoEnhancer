@@ -1,13 +1,27 @@
+import logging
+
 import cv2
 import matplotlib
 import numpy as np
 from PIL import Image
 from matplotlib import pyplot as plt, patches
-
+import time
+import os
 from core.models import RegionPrompt, Box, Vector2
+
+logger = logging.getLogger(__name__)
 
 
 class ImageUtils:
+
+    @staticmethod
+    def wait_for_image(image_path, timeout=30):
+        start = time.time()
+        while time.time() - start < timeout:
+            if os.path.isfile(image_path):
+                return
+            time.sleep(0.5)
+        logger.warning(f"Timeout waiting for file: {image_path}")
 
     @staticmethod
     def get_center(img: np.ndarray) -> Vector2:
