@@ -16,9 +16,11 @@ class ImageUtils:
 
     @staticmethod
     def wait_for_image(image_path, timeout=30):
+        logger.info(f"Waiting for image: {image_path}, timeout: {timeout}")
         start = time.time()
         while time.time() - start < timeout:
             if os.path.isfile(image_path):
+                logger.info(f"Found image: {image_path}")
                 return
             time.sleep(0.5)
         logger.warning(f"Timeout waiting for file: {image_path}")
