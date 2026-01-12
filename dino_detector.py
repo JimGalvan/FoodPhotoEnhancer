@@ -17,12 +17,11 @@ class DinoDetector:
     def detect_boxes(self, image_path: str, grounding_prompt, box_threshold=0.25, text_threshold=0.25):
         self.logger.info(f"Image path: {image_path}")
         self.logger.info(f"Grounding prompt: {grounding_prompt}")
-        self.logger.info("Loading image for DINO box detection...")
         ImageUtils.wait_for_image(
             image_path=image_path,
             timeout=10,
         )
-
+        self.logger.info("Loading image for DINO box detection...")
         image_source, image = load_image(image_path)
         self.logger.info(f"Image source: {image_source}")
 
