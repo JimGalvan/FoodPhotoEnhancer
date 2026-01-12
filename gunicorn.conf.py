@@ -1,3 +1,3 @@
-workers = 4
-timeout = 400
+workers = 1
+timeout = 100
 preload_app = True
