@@ -99,13 +99,14 @@ class SubjectIsolationPipeline:
 
         self.logger.info("SubjectIsolationPipeline initialized successfully")
 
-    def find_subject(self, image_path):
+
+    def find_subject(self, image_bgr: np.ndarray):
         self.logger.info("Starting subject detection pipeline")
 
         # 1. Detect items (DINO)
         self.logger.debug("Running DINO box detection")
         image_source, image, boxes, phrases = self.dino_detector.detect_boxes(
-            image_path,
+            image_bgr,
             grounding_prompt=self.dino_settings.grounding_prompt,
             box_threshold=self.dino_settings.box_threshold,
             text_threshold=self.dino_settings.text_threshold,

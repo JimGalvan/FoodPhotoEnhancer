@@ -6,6 +6,7 @@ import cv2
 import matplotlib
 import numpy as np
 from PIL import Image
+from django.core.files.uploadedfile import UploadedFile
 from matplotlib import pyplot as plt, patches
 import time
 import os
@@ -15,6 +16,12 @@ logger = logging.getLogger(__name__)
 
 
 class ImageUtils:
+
+    @staticmethod
+    def convert_payload_file_to_bgr(photo: UploadedFile):
+        file_bytes = np.frombuffer(photo.read(), np.uint8)
+        return cv2.imdecode(file_bytes, cv2.IMREAD_COLOR)
+
 
     @staticmethod
     def copy_to_local_tmp(src_path: str, suffix: str = ".jpg") -> str:

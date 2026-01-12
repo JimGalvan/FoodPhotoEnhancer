@@ -1,6 +1,7 @@
 import logging
 
-from groundingdino.util.inference import predict, load_image
+import numpy as np
+from groundingdino.util.inference import predict, Model
 from pycparser.ply.yacc import resultlimit
 
 from core.models import Box
@@ -14,21 +15,17 @@ class DinoDetector:
         self.device = device
         self.model = model
 
-    def detect_boxes(self, image_path: str, grounding_prompt, box_threshold=0.25, text_threshold=0.25):
-        self.logger.info(f"Image path: {image_path}")
+    def detect_boxes(self, image_bgr: np.ndarray, grounding_prompt, box_threshold=0.25, text_threshold=0.25):
         self.logger.info(f"Grounding prompt: {grounding_prompt}")
-        ImageUtils.copy_to_local_tmp(src_path=image_path)
-
         self.logger.info("Loading image for DINO box detection...")
-        image_source, image = load_image(image_path)
-        self.logger.info(f"Image source: {image_source}")
+        image_tensor = Model.preprocess_image(image_bgr)
 
-        h, w, _ = image_source.shape
+        h, w, _ = image_bgr.shape
 
         self.logger.info("Running DINO box detection...")
         boxes, logits, phrases = predict(
             model=self.model,
-            image=image,
+            image=image_tensor,
             caption=grounding_prompt,
             box_threshold=box_threshold,
             text_threshold=text_threshold,
@@ -50,4 +47,4 @@ class DinoDetector:
             if x2 > x1 and y2 > y1:
                 box = Box(x1, y1, x2, y2)
                 result_boxes.append(box)
-        return image_source, image, result_boxes, phrases
+        return image_bgr, image_tensor, result_boxes, phrases
