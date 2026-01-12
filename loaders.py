@@ -9,14 +9,21 @@ from core.settings import DinoDetectorSettings, SamSegmenterSettings, DepthAnyth
 from core.model_downloader import ModelDownloader
 
 
-def load_grounding_dino(settings: DinoDetectorSettings):
+def load_grounding_dino(settings: DinoDetectorSettings, device: str = "cpu"):
     # Download checkpoint if it's a URL
     checkpoint_path = ModelDownloader.get_local_path(settings.model_checkpoint_path)
 
-    return load_model(
+    model = load_model(
         settings.model_config_path,
         checkpoint_path,
+        device=device,
     )
+
+    # Explicitly move model to device (important for remote GPU environments)
+    model = model.to(device)
+    model.eval()
+
+    return model
 
 
 def load_sam(

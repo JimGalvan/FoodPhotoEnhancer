@@ -1,6 +1,7 @@
 import logging
 
 import numpy as np
+import torch
 from groundingdino.util.inference import predict, Model
 from pycparser.ply.yacc import resultlimit
 
@@ -20,7 +21,16 @@ class DinoDetector:
         self.logger.info("Loading image for DINO box detection...")
         image_tensor = Model.preprocess_image(image_bgr)
 
+        # Explicitly move tensor to the correct device
+        if isinstance(image_tensor, torch.Tensor):
+            image_tensor = image_tensor.to(self.device)
+
         h, w, _ = image_bgr.shape
+
+        # Clear CUDA cache before inference (helps with remote GPU environments)
+        if self.device.startswith('cuda') and torch.cuda.is_available():
+            torch.cuda.empty_cache()
+            torch.cuda.synchronize()
 
         self.logger.info("Running DINO box detection...")
         boxes, logits, phrases = predict(
@@ -31,6 +41,10 @@ class DinoDetector:
             text_threshold=text_threshold,
             device=self.device,
         )
+
+        # Synchronize after inference to ensure completion
+        if self.device.startswith('cuda') and torch.cuda.is_available():
+            torch.cuda.synchronize()
 
         self.logger.info("DINO box detection complete")
         result_boxes: list[Box] = []

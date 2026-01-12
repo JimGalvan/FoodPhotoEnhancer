@@ -76,7 +76,8 @@ class SubjectIsolationPipeline:
         # Load DINO
         self.logger.debug("Loading Grounding DINO model")
         dino_model = load_grounding_dino(
-            settings=self.dino_settings
+            settings=self.dino_settings,
+            device=self.device
         )
         self.dino_detector = DinoDetector(
             device=self.device,

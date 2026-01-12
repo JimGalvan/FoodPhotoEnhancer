@@ -83,3 +83,6 @@ def get_prompt_box(image, s = 1):
     D = int(cy + box_h / 2)
 
     return np.array([A, B, C, D])
+
+
+
