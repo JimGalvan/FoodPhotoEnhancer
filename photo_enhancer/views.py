@@ -1,4 +1,5 @@
 import base64
+import logging
 import os
 import uuid
 from io import BytesIO
@@ -17,24 +18,102 @@ from enhancer import get_subject_isolation_pipeline
 
 subject_sessions = {}
 
+logger = logging.getLogger(__name__)
+
 
 def index(request):
     return render(request, 'photo_enhancer/index.html')
 
 
+import os
+import uuid
+import logging
+
+logger = logging.getLogger(__name__)
+
 def save_temp_photo(photo):
-    temp_dir = os.path.join(settings.MEDIA_ROOT, 'temp')
+    temp_dir = os.path.join(settings.MEDIA_ROOT, "temp")
     os.makedirs(temp_dir, exist_ok=True)
 
     ext = os.path.splitext(photo.name)[1]
-    filename = f"{uuid.uuid4()}{ext}"
-    path = os.path.join(temp_dir, filename)
+    final_name = f"{uuid.uuid4()}{ext}"
+    final_path = os.path.join(temp_dir, final_name)
+    tmp_path = final_path + ".tmp"
 
-    with open(path, 'wb+') as f:
-        for chunk in photo.chunks():
-            f.write(chunk)
+    logger.info(
+        "Starting image write",
+        extra={
+            "original_name": photo.name,
+            "tmp_path": tmp_path,
+            "final_path": final_path,
+        },
+    )
 
-    return path
+    total_bytes = 0
+
+    try:
+        with open(tmp_path, "wb") as f:
+            for i, chunk in enumerate(photo.chunks()):
+                chunk_size = len(chunk)
+                f.write(chunk)
+                total_bytes += chunk_size
+
+                logger.debug(
+                    "Wrote image chunk",
+                    extra={
+                        "chunk_index": i,
+                        "chunk_size": chunk_size,
+                        "total_bytes": total_bytes,
+                        "tmp_path": tmp_path,
+                    },
+                )
+
+            f.flush()
+            os.fsync(f.fileno())
+
+        logger.info(
+            "Finished writing temp image",
+            extra={
+                "tmp_path": tmp_path,
+                "total_bytes": total_bytes,
+            },
+        )
+
+        os.rename(tmp_path, final_path)
+
+        logger.info(
+            "Image write committed (atomic rename)",
+            extra={
+                "final_path": final_path,
+                "total_bytes": total_bytes,
+            },
+        )
+
+        return final_path
+
+    except Exception as e:
+        logger.exception(
+            "Failed while saving temp photo",
+            extra={
+                "tmp_path": tmp_path,
+                "final_path": final_path,
+                "bytes_written": total_bytes,
+            },
+        )
+
+        # Cleanup partial file if it exists
+        try:
+            if os.path.exists(tmp_path):
+                os.remove(tmp_path)
+                logger.warning(
+                    "Removed partial temp file after failure",
+                    extra={"tmp_path": tmp_path},
+                )
+        except Exception:
+            logger.exception("Failed to clean up temp file")
+
+        raise
+
 
 
 def delete_file(path: str) -> None:
