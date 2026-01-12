@@ -41,7 +41,11 @@ def load_sam(
 def load_depth_anything_v2(
         settings: DepthAnythingV2Settings,
         device: str = "cpu",
+        map_location="cpu",
 ):
+    print("Loading depth anything v2 model")
+    print(f"Map location: {map_location}")
+
     # Download checkpoint if it's a URL
     checkpoint_path = ModelDownloader.get_local_path(settings.checkpoint_path)
 
@@ -53,7 +57,7 @@ def load_depth_anything_v2(
 
     state = torch.load(
         checkpoint_path,
-        map_location=device
+        map_location=map_location
     )
     model.load_state_dict(state)
     model.to(device)
