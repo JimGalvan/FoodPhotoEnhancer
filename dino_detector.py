@@ -10,9 +10,12 @@ class DinoDetector:
         self.model = model
 
     def detect_boxes(self, image_path: str, grounding_prompt, box_threshold=0.25, text_threshold=0.25):
+        print("Loading image for DINO box detection...")
         image_source, image = load_image(image_path)
+        print("Image loaded")
         h, w, _ = image_source.shape
 
+        print("Running DINO box detection...")
         boxes, logits, phrases = predict(
             model=self.model,
             image=image,
@@ -21,7 +24,7 @@ class DinoDetector:
             text_threshold=text_threshold,
             device=self.device,
         )
-
+        print("DINO box detection complete")
         result_boxes: list[Box] = []
         for b in boxes:
             cx, cy, bw, bh = b.tolist()
