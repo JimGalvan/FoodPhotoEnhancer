@@ -10,8 +10,13 @@ from core.model_downloader import ModelDownloader
 
 
 def load_grounding_dino(settings: DinoDetectorSettings, device: str = "cpu"):
+    import logging
+    logger = logging.getLogger(__name__)
+
     # Download checkpoint if it's a URL
     checkpoint_path = ModelDownloader.get_local_path(settings.model_checkpoint_path)
+
+    logger.info(f"Loading GroundingDINO model on device: {device}")
 
     model = load_model(
         settings.model_config_path,
@@ -20,9 +25,20 @@ def load_grounding_dino(settings: DinoDetectorSettings, device: str = "cpu"):
     )
 
     # Explicitly move model to device (important for remote GPU environments)
+    logger.debug("Moving model to device and setting to eval mode...")
     model = model.to(device)
     model.eval()
 
+    # Ensure all submodules are on the correct device (critical for BERT encoder)
+    if device.startswith('cuda') and torch.cuda.is_available():
+        logger.debug("Verifying all model components are on CUDA...")
+        for name, module in model.named_modules():
+            if hasattr(module, 'to'):
+                module.to(device)
+        torch.cuda.synchronize()
+        logger.debug("All model components verified on CUDA")
+
+    logger.info("GroundingDINO model loaded successfully")
     return model
 
 
