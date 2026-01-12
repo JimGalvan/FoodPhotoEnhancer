@@ -1,4 +1,6 @@
 import logging
+import shutil
+import uuid
 
 import cv2
 import matplotlib
@@ -13,6 +15,17 @@ logger = logging.getLogger(__name__)
 
 
 class ImageUtils:
+
+    @staticmethod
+    def copy_to_local_tmp(src_path: str, suffix: str = ".jpg") -> str:
+        """
+        Copy a file to a unique local /tmp path and return the new path.
+        Fails fast if the copy cannot complete.
+        """
+        logger.info(f"Copying file: {src_path}")
+        dst_path = os.path.join("/tmp", f"{uuid.uuid4()}{suffix}")
+        shutil.copyfile(src_path, dst_path)
+        return dst_path
 
     @staticmethod
     def wait_for_image(image_path, timeout=30):

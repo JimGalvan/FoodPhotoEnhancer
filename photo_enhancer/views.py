@@ -15,21 +15,16 @@ from django.views.decorators.csrf import csrf_exempt
 from enhancement_pipeline import EnhancementPipeline
 from config import settings
 from enhancer import get_subject_isolation_pipeline
+import os
+import uuid
 
 subject_sessions = {}
-
 logger = logging.getLogger(__name__)
 
 
 def index(request):
     return render(request, 'photo_enhancer/index.html')
 
-
-import os
-import uuid
-import logging
-
-logger = logging.getLogger(__name__)
 
 def save_temp_photo(photo):
     temp_dir = os.path.join(settings.MEDIA_ROOT, "temp")
@@ -113,7 +108,6 @@ def save_temp_photo(photo):
             logger.exception("Failed to clean up temp file")
 
         raise
-
 
 
 def delete_file(path: str) -> None:
