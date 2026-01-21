@@ -20,7 +20,10 @@ class ImageUtils:
     @staticmethod
     def convert_payload_file_to_bgr(photo: UploadedFile):
         file_bytes = np.frombuffer(photo.read(), np.uint8)
-        return cv2.imdecode(file_bytes, cv2.IMREAD_COLOR)
+        image = cv2.imdecode(file_bytes, cv2.IMREAD_COLOR)
+        if image is None:
+            raise ValueError(f"Failed to decode image: {photo.name}")
+        return image
 
 
     @staticmethod
