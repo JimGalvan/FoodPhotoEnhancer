@@ -1,3 +1,4 @@
+import cv2
 import numpy as np
 
 from core.lighting_utils import LightingUtils
@@ -7,7 +8,7 @@ class PhotoEnhancer:
     @staticmethod
     def enhance(image):
         x = image.copy()
-        x *= 1.15
+        x *= 1.07
         x[..., 0] *= 1.03
         x[..., 2] *= 0.97
         x = np.clip(x, 0.0, 1.0)
@@ -34,12 +35,25 @@ class PhotoEnhancer:
         return np.clip(enhanced, 0.0, 1.0)
 
     @staticmethod
-    def desaturate_background(image, amount=0.3):
+    def desaturate_background(image, amount=0.7):
         gray = image.mean(axis=2, keepdims=True)
         return gray + amount * (image - gray)
 
     @staticmethod
-    def create_vignette(shape, strength=0.3):
+    def unsharp_mask(image, sigma=1.0, strength=0.5):
+        blurred = cv2.GaussianBlur(image, (0, 0), sigma)
+        return np.clip(image + strength * (image - blurred), 0.0, 1.0)
+
+    @staticmethod
+    def disc_blur(image, radius=7):
+        size = 2 * radius + 1
+        kernel = np.zeros((size, size), dtype=np.float32)
+        cv2.circle(kernel, (radius, radius), radius, 1, -1)
+        kernel /= kernel.sum()
+        return cv2.filter2D(image, -1, kernel)
+
+    @staticmethod
+    def create_vignette(shape, strength=0.15):
         h, w = shape[:2]
         y, x = np.ogrid[:h, :w]
         center_y, center_x = h / 2, w / 2

@@ -28,7 +28,9 @@ class EnhancementPipeline:
         )
 
         logger.info("mask:soften")
-        mask_soft = MaskProcessor.soften(mask_filled, sigma=0.005)
+        h, w = mask_filled.shape[:2]
+        feather_sigma = max(1, int(min(h, w) * 0.01))
+        mask_soft = MaskProcessor.soften(mask_filled, sigma=feather_sigma)
         logger.debug("mask_soft shape=%s", mask_soft.shape)
 
         logger.info("subject:enhance")
@@ -43,8 +45,14 @@ class EnhancementPipeline:
         logger.info("subject:food_color_boost")
         subject = PhotoEnhancer.boost_food_colors(subject)
 
+        logger.info("subject:sharpen")
+        subject = PhotoEnhancer.unsharp_mask(subject)
+
         logger.info("background:blur")
-        background = ImageUtils.gaussian_blur(self.image, sigma=3)
+        background = PhotoEnhancer.disc_blur(self.image)
+
+        logger.info("background:desaturate")
+        background = PhotoEnhancer.desaturate_background(background)
 
         logger.info("background:vignette")
         vignette = PhotoEnhancer.create_vignette(background.shape)

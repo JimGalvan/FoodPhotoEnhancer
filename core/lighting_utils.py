@@ -6,12 +6,18 @@ from image_utils import ImageUtils
 
 class LightingUtils:
     @staticmethod
-    def window_light(rgb, gamma):
+    def window_light(rgb, gamma, direction_strength=0.12):
         img_u8 = ImageUtils.to_uint8(rgb)
         lab = cv2.cvtColor(img_u8, cv2.COLOR_RGB2LAB)
 
         L, A, B = cv2.split(lab)
         L = np.power(L.astype(np.float32) / 255.0, gamma)
+
+        h, w = L.shape
+        gradient = np.linspace(1.0 + direction_strength, 1.0 - direction_strength * 0.6, w)
+        gradient = gradient[np.newaxis, :]
+        L = np.clip(L * gradient, 0.0, 1.0).astype(np.float32)
+
         L = ImageUtils.to_uint8(L)
 
         out = cv2.merge([L, A, B])
